@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>EASTCASTEL - Application de présence</title>
+
+  <link rel="preconnect" href="https://fonts.bunny.net" />
+  <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ["Instrument Sans", "sans-serif"]
+          },
+          colors: {
+            primary: {
+              DEFAULT: "#4CAF50",
+              lighter: "#81C784",
+              dark: "#388E3C"
+            },
+            sand: {
+              1: "#fdfdfc",
+              2: "#f9f9f8",
+              3: "#f1f0ef",
+              4: "#e9e8e6",
+              5: "#e2e1de",
+              6: "#dad9d6",
+              7: "#cfceca",
+              8: "#bcbbb5",
+              9: "#8d8d86",
+              10: "#82827c",
+              11: "#63635e",
+              12: "#21201c"
+            },
+            boxShadow: {
+              'card': '0 2px 8px rgba(0, 0, 0, 0.08)',
+              'button': '0 2px 4px -1px rgba(76, 175, 80, 0.2)'
+            },
+            dark: '#121212',
+            light: '#f5f5f5',
+            blackText: '#000000',
+          },
+          backgroundColor: {
+            'dark': '#121212',
+          },
+          textColor: {
+            'light': '#f5f5f5',
+            'blackText': '#000000',
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    @media (max-width: 320px) {
+      .container {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+      }
+      .mobile-menu-content {
+        width: 100%;
+        max-width: 280px;
+      }
+      .text-responsive {
+        font-size: 0.875rem;
+      }
+      .text-xl-responsive {
+        font-size: 1.125rem;
+      }
+      .text-2xl-responsive {
+        font-size: 1.25rem;
+      }
+      .p-responsive {
+        padding: 1rem;
+      }
+      .py-responsive {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+      }
+      .table-cell {
+        padding: 0.5rem 0.25rem;
+        font-size: 0.75rem;
+      }
+    }
+
+    @media (min-width: 768px) {
+      .md\:text-lg {
+        font-size: 1.125rem;
+        line-height: 1.75rem;
+      }
+      .md\:text-xl {
+        font-size: 1.25rem;
+        line-height: 1.75rem;
+      }
+      .md\:text-2xl {
+        font-size: 1.5rem;
+        line-height: 2rem;
+      }
+      .md\:p-3 {
+        padding: 0.75rem;
+      }
+      .md\:p-4 {
+        padding: 1rem;
+      }
+      .md\:p-6 {
+        padding: 1.5rem;
+      }
+      .md\:table-cell {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.875rem;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .lg\:text-3xl {
+        font-size: 1.875rem;
+        line-height: 2.25rem;
+      }
+      .lg\:text-4xl {
+        font-size: 2.25rem;
+        line-height: 2.5rem;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-dark text-light flex flex-col min-h-screen">
+  @include('components/header')
+
+  <main class="container mx-auto p-2 flex-1">
+    <div class="max-w-full mx-auto mb-3">
+      @if(flashMessages.has('success'))
+        <div class="bg-green-700 border-l-4 border-green-300 text-green-100 p-2 mb-3 rounded-r shadow-card text-xs md:text-sm">
+          <div class="flex items-center">
+            <svg class="w-3 h-3 mr-1 md:w-4 md:h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+            <p>{{ flashMessages.get('success') }}</p>
+          </div>
+        </div>
+      @endif
+
+      @if(flashMessages.has('error'))
+        <div class="bg-red-700 border-l-4 border-red-300 text-red-100 p-2 mb-3 rounded-r shadow-card text-xs md:text-sm">
+          <div class="flex items-center">
+            <svg class="w-3 h-3 mr-1 md:w-4 md:h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+            </svg>
+            <p>{{ flashMessages.get('error') }}</p>
+          </div>
+        </div>
+      @endif
+    </div>
+
+    <div class="bg-green-100 p-4 text-blackText rounded-lg shadow-card mb-4">
+      <div class="flex flex-col">
+        <div class="flex justify-between items-start">
+          <div class="mb-2">
+            <h1 class="text-xl-responsive md:text-2xl lg:text-3xl font-bold">Gestion des présences</h1>
+            <p class="text-xs md:text-sm opacity-90">Enregistrez votre présence</p>
+          </div>
+          <a href="{{ route('home') }}" class="text-xs md:text-sm text-blackText hover:text-primary-lighter flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="md:w-4 md:h-4">
+              <path d="m12 19-7-7 7-7"></path>
+              <path d="M19 12H5"></path>
+            </svg>
+            Retour
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-gray-800 rounded-lg shadow-card mb-4">
+      <div class="p-3 md:p-4">
+        <h2 class="text-sm md:text-md font-semibold text-light mb-2 md:mb-3">Enregistrement</h2>
+        @if(!hasCheckedIn)
+          <form action="{{ route('presences.checkIn') }}" method="POST">
+            {{ csrfField() }}
+            <button type="submit" class="w-full bg-green-100 text-blackText text-sm md:text-base font-medium py-2 px-3 rounded-lg shadow-button flex items-center justify-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="md:w-5 md:h-5">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              Check-in
+            </button>
+          </form>
+        @else
+          <form action="{{ route('presences.checkOut') }}" method="POST">
+            {{ csrfField() }}
+            <button type="submit" class="w-full bg-green-100 text-blackText text-sm md:text-base font-medium py-2 px-3 rounded-lg flex items-center justify-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="md:w-5 md:h-5">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+              </svg>
+              Check-out
+            </button>
+          </form>
+        @endif
+      </div>
+    </div>
+
+    <div class="bg-gray-800 rounded-lg shadow-card">
+      <div class="p-3 md:p-4">
+        <div class="flex justify-between items-center mb-3 md:mb-4">
+          <h2 class="text-sm md:text-md font-semibold text-light">Historique</h2>
+          <a href="{{ route('presences.report') }}" class="text-xs md:text-sm text-primary hover:text-primary-lighter flex items-center gap-1">
+            Tout voir
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="md:w-4 md:h-4">
+              <path d="M5 12h14"></path>
+              <path d="m12 5 7 7-7 7"></path>
+            </svg>
+          </a>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs md:text-sm">
+            <thead class="bg-green-100 text-blackText">
+              <tr>
+                <th class="px-2 py-1 md:px-3 md:py-2 text-left font-medium">Date</th>
+                <th class="px-2 py-1 md:px-3 md:py-2 text-left font-medium">Entrée</th>
+                <th class="px-2 py-1 md:px-3 md:py-2 text-left font-medium">Sortie</th>
+                <th class="px-2 py-1 md:px-3 md:py-2 text-left font-medium">Statut</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-sand-6">
+              @each(presence in presences)
+                <tr class="hover:bg-sand-8/50">
+                  <td class="px-2 py-1 md:px-3 md:py-2 text-light">{{ new Date(presence.checkIn).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }) }}</td>
+                  <td class="px-2 py-1 md:px-3 md:py-2 text-light">{{ new Date(presence.checkIn).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) }}</td>
+                  <td class="px-2 py-1 md:px-3 md:py-2 text-light">
+                    @if(presence.checkOut)
+                      {{ new Date(presence.checkOut).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) }}
+                    @else
+                      <span class="text-sand-4">-</span>
+                    @endif
+                  </td>
+                  <td class="px-2 py-1 md:px-3 md:py-2">
+                    @if(presence.status === 'present')
+                      <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xxs md:text-xs font-medium bg-green-100 text-green-800">
+                        Présent
+                      </span>
+                    @elseif(presence.status === 'late')
+                      <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xxs md:text-xs font-medium bg-yellow-100 text-yellow-800">
+                        Retard
+                      </span>
+                    @else
+                      <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xxs md:text-xs font-medium bg-red-100 text-red-800">
+                        Absent
+                      </span>
+                    @endif
+                  </td>
+                </tr>
+              @endeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  @include('components/footer')
+
+  <script>
+    // Masquer les messages flash après 5 secondes
+    const flashMessages = document.querySelectorAll('.bg-green-700, .bg-red-700');
+    flashMessages.forEach(message => {
+      setTimeout(() => {
+        message.remove();
+      }, 5000);
+    });
+
+    // Gestion du menu mobile
+    document.addEventListener('DOMContentLoaded', function() {
+      const burgerBtn = document.getElementById('burger-btn');
+      const closeBtn = document.getElementById('close-menu-btn');
+      const mobileMenu = document.getElementById('mobile-menu');
+
+      function toggleMenu() {
+        mobileMenu.classList.toggle('hidden');
+        document.body.classList.toggle('overflow-hidden');
+      }
+
+      burgerBtn.addEventListener('click', toggleMenu);
+      closeBtn.addEventListener('click', toggleMenu);
+
+      // Fermer en cliquant à l'extérieur
+      mobileMenu.addEventListener('click', function(e) {
+        if (e.target === mobileMenu) {
+          toggleMenu();
+        }
+      });
+    });
+  </script>
+</body>
+</html>

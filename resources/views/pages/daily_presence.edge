@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>EASTCASTEL - Présences quotidiennes</title>
+
+  <link rel="preconnect" href="https://fonts.bunny.net" />
+  <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ["Instrument Sans", "sans-serif"]
+          },
+          colors: {
+            primary: {
+              DEFAULT: "#5A45FF",
+              lighter: "#a599ff"
+            },
+            sand: {
+              1: "#fdfdfc",
+              2: "#f9f9f8",
+              3: "#f1f0ef",
+              4: "#e9e8e6",
+              5: "#e2e1de",
+              6: "#dad9d6",
+              7: "#cfceca",
+              8: "#bcbbb5",
+              9: "#8d8d86",
+              10: "#82827c",
+              11: "#63635e",
+              12: "#21201c"
+            }
+          },
+          boxShadow: {
+            card: "0 2px 8px rgba(0, 0, 0, 0.08)"
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @media (max-width: 640px) {
+      .table-responsive {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+    }
+
+    .animate-fade-in {
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      line-height: 1;
+    }
+
+    /* Styles pour le menu mobile */
+    .mobile-menu {
+      transition: all 0.3s ease;
+    }
+    .mobile-menu.hidden {
+      opacity: 0;
+      transform: translateX(100%);
+    }
+    .mobile-menu:not(.hidden) {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  </style>
+</head>
+
+<body class="bg-sand-2 min-h-screen flex flex-col">
+  @include('components/header_admin')
+
+  <div id="mobile-menu" class="mobile-menu hidden fixed inset-0 z-50 bg-black bg-opacity-50 transition-opacity">
+    <div class="absolute right-0 top-0 h-full w-64 bg-white shadow-lg">
+      <div class="flex justify-end p-4">
+        <button id="close-menu-btn" class="text-sand-11 focus:outline-none">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <nav class="p-4 space-y-4">
+        <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2 text-sand-12 hover:bg-sand-3 rounded transition-colors">
+          Tableau de bord
+        </a>
+        <a href="{{ route('admin.dailyPresences') }}" class="block px-4 py-2 text-sand-12 hover:bg-sand-3 rounded transition-colors">
+          Présences
+        </a>
+      </nav>
+    </div>
+  </div>
+
+  <main class="container mx-auto px-4 py-6 flex-1 animate-fade-in">
+    <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h2 class="text-2xl font-bold text-sand-12">Présences quotidiennes</h2>
+        <p class="text-base text-sand-11 mt-2 flex items-center">
+          <span class="font-semibold text-sand-12 mr-2 bg-primary/10 px-3 py-1 rounded-full text-sm inline-flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            AUJOURD'HUI
+          </span>
+          <span class="text-sand-11">
+            {{ todayLabel }}
+          </span>
+        </p>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="bg-white rounded-lg shadow-card px-4 py-2">
+          <p class="text-xs text-sand-9">Total présences</p>
+          <p class="font-bold text-primary">{{ presences.length }}</p>
+        </div>
+        <a href="{{ route('admin.dashboard') }}" class="bg-white hover:bg-sand-3 text-sand-11 px-4 py-2 rounded-lg shadow-card text-sm font-medium transition-colors flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Retour
+        </a>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-card overflow-hidden border border-sand-4">
+      <div class="table-responsive">
+        <table class="min-w-full divide-y divide-sand-4">
+          <thead class="bg-primary/5">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-primary uppercase tracking-wider border-b border-sand-4">
+                Employé
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-primary uppercase tracking-wider border-b border-sand-4">
+                Arrivée
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-primary uppercase tracking-wider border-b border-sand-4">
+                Départ
+              </th>
+              <th scope="col" class="px-2 py-2 md:px-3 md:py-2 text-left text-xs font-semibold text-primary uppercase tracking-wider border-b border-sand-4">
+                Durée
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-primary uppercase tracking-wider border-b border-sand-4">
+                Statut
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-sand-4">
+            @each(presence in presences)
+              <tr class="hover:bg-primary/5 transition-colors even:bg-sand-2/30">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div class="flex-shrink-0 h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
+                      {{ presence.user.firstName.charAt(0) }}{{ presence.user.name.charAt(0) }}
+                    </div>
+                    <div class="ml-4">
+                      <div class="text-sm font-semibold text-sand-12">
+                        {{ presence.user.firstName }} {{ presence.user.name }}
+                      </div>
+                      <div class="text-xs text-sand-10">{{ presence.user.email }}</div>
+                    </div>
+                  </div>
+                </td>
+               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-sand-12">
+                @if(presence.formattedCheckIn)
+                  <div class="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    {{ presence.formattedCheckIn }}
+                  </div>
+                @else
+                  <div class="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-sand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    <span class="text-sand-400">-</span>
+                  </div>
+                @endif
+              </td>
+
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-sand-12">
+                @if(presence.formattedCheckOut)
+                  <div class="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    {{ presence.formattedCheckOut }}
+                  </div>
+                @else
+                  <div class="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-sand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    <span class="text-sand-400">-</span>
+                  </div>
+                @endif
+              </td>
+
+                <td class="px-2 py-2 md:px-3 md:py-2 whitespace-nowrap">
+                  @if(presence.duration)
+                    <div class="flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span class="tabular-nums">
+                        {{ presence.duration }}
+                      </span>
+                    </div>
+                  @else
+                    <div class="flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-sand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      <span class="text-sand-400">-</span>
+                    </div>
+                  @endif
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  @if(!presence.checkIn && !presence.checkOut)
+                    <span class="badge bg-red-100 text-red-800">
+                      <svg class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      Absent
+                    </span>
+                  @elseif(presence.checkIn && !presence.checkOut)
+                    <span class="badge bg-yellow-100 text-yellow-800">
+                      <svg class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      En cours
+                    </span>
+                  @else
+                    <span class="badge bg-green-100 text-green-800">
+                      <svg class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      Complet
+                    </span>
+                  @endif
+                </td>
+              </tr>
+            @endeach
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  @include('components/footer')
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Gestion du menu burger
+      const burgerBtn = document.getElementById('burger-btn');
+      const closeBtn = document.getElementById('close-menu-btn');
+      const mobileMenu = document.getElementById('mobile-menu');
+
+      function toggleMenu() {
+        mobileMenu.classList.toggle('hidden');
+        document.body.classList.toggle('overflow-hidden');
+      }
+
+      burgerBtn.addEventListener('click', toggleMenu);
+      closeBtn.addEventListener('click', toggleMenu);
+
+      // Fermer le menu en cliquant à l'extérieur
+      mobileMenu.addEventListener('click', function(e) {
+        if (e.target === mobileMenu) {
+          toggleMenu();
+        }
+      });
+
+      // Fermer le menu en cliquant sur un lien
+      document.querySelectorAll('#mobile-menu a').forEach(link => {
+        link.addEventListener('click', toggleMenu);
+      });
+
+      // Animation pour les lignes du tableau
+      const rows = document.querySelectorAll('tbody tr');
+      rows.forEach((row, index) => {
+        row.style.opacity = '0';
+        row.style.transform = 'translateY(10px)';
+        row.style.transition = `all 0.3s ease-out ${index * 0.05}s`;
+
+        setTimeout(() => {
+          row.style.opacity = '1';
+          row.style.transform = 'translateY(0)';
+        }, 100);
+      });
+
+      // Gestion des messages flash
+      setTimeout(() => {
+        const flashes = document.querySelectorAll('.flash-message');
+        flashes.forEach(flash => {
+          flash.style.transition = 'opacity 0.3s ease-out';
+          flash.style.opacity = '0';
+          setTimeout(() => flash.remove(), 300);
+        });
+      }, 5000);
+    });
+  </script>
+</body>
+</html>

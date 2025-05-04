@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>EASTCASTEL - Tableau de bord Admin</title>
+
+  <link rel="preconnect" href="https://fonts.bunny.net" />
+  <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ["Instrument Sans", "sans-serif"]
+          },
+          colors: {
+            primary: {
+              DEFAULT: "#5A45FF",
+              lighter: "#a599ff"
+            },
+            sand: {
+              1: "#fdfdfc",
+              2: "#f9f9f8",
+              3: "#f1f0ef",
+              4: "#e9e8e6",
+              5: "#e2e1de",
+              6: "#dad9d6",
+              7: "#cfceca",
+              8: "#bcbbb5",
+              9: "#8d8d86",
+              10: "#82827c",
+              11: "#63635e",
+              12: "#21201c"
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @media (max-width: 320px) {
+      .container {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+      }
+      .text-responsive {
+        font-size: 0.875rem;
+      }
+      .text-xl-responsive {
+        font-size: 1.125rem;
+      }
+      .text-2xl-responsive {
+        font-size: 1.25rem;
+      }
+      .table-cell {
+        padding: 0.5rem;
+        font-size: 0.75rem;
+      }
+      .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+    }
+
+    @media (min-width: 768px) {
+      .md\:text-lg {
+        font-size: 1.125rem;
+        line-height: 1.75rem;
+      }
+      .md\:text-xl {
+        font-size: 1.25rem;
+        line-height: 1.75rem;
+      }
+      .md\:text-2xl {
+        font-size: 1.5rem;
+        line-height: 2rem;
+      }
+      .md\:p-3 {
+        padding: 0.75rem;
+      }
+      .md\:p-4 {
+        padding: 1rem;
+      }
+      .md\:p-6 {
+        padding: 1.5rem;
+      }
+      .md\:table-cell {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.875rem;
+      }
+      .stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .lg\:text-3xl {
+        font-size: 1.875rem;
+        line-height: 2.25rem;
+      }
+      .lg\:text-4xl {
+        font-size: 2.25rem;
+        line-height: 2.5rem;
+      }
+      .stats-grid {
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 1.5rem;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-sand-2 min-h-screen flex flex-col">
+  @include('components/header_admin')
+
+  <main class="container mx-auto p-2 flex-1">
+    <header class="mb-4 flex flex-col gap-2 md:gap-3">
+      <div>
+        <h1 class="text-xl-responsive md:text-2xl lg:text-3xl font-bold text-sand-12">Tableau de bord Admin</h1>
+        <p class="text-xs md:text-sm text-sand-9">Gestion des utilisateurs</p>
+      </div>
+
+    </header>
+
+    <div class="mb-3">
+      @if(flashMessages.has('success'))
+        <div class="bg-green-100 border border-green-400 text-green-700 p-2 rounded text-xs md:text-sm mb-2">
+          {{ flashMessages.get('success') }}
+        </div>
+      @endif
+      @if(flashMessages.has('error'))
+        <div class="bg-red-100 border border-red-400 text-red-700 p-2 rounded text-xs md:text-sm mb-2">
+          {{ flashMessages.get('error') }}
+        </div>
+      @endif
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md overflow-hidden mb-4">
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs md:text-sm">
+          <thead class="bg-sand-3 text-sand-11">
+            <tr>
+              <th class="px-2 py-2 md:px-3 md:py-2 text-left font-medium">Nom</th>
+              <th class="px-2 py-2 md:px-3 md:py-2 text-left font-medium">Email</th>
+              <th class="px-2 py-2 md:px-3 md:py-2 text-left font-medium">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-sand-4">
+            @each(user in users)
+              <tr class="hover:bg-sand-2/50">
+                <td class="px-2 py-2 md:px-3 md:py-2 text-sand-11">
+                  {{ user.firstName }} {{ user.name }}
+                </td>
+                <td class="px-2 py-2 md:px-3 md:py-2 text-sand-11">
+                  {{ user.email }}
+                </td>
+                
+                <td class="px-2 py-2 md:px-3 md:py-2">
+                  <form action="{{ route('admin.deleteUser', { id: user.id }) }}" method="POST" onsubmit="return confirm('Supprimer cet utilisateur ?')">
+                    {{csrfField()}}
+                    @method('DELETE')
+                    <button type="submit" class="bg-red-500 text-white px-2 py-1 rounded text-xs md:text-sm hover:bg-red-700">
+                      Suppr.
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            @endeach
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="stats-grid grid gap-2 md:gap-4 lg:gap-6 mb-4">
+      <div class="bg-white p-3 md:p-4 rounded shadow">
+        <h3 class="text-sm md:text-md font-medium text-sand-11">Utilisateurs</h3>
+        <p class="text-xl md:text-2xl font-bold text-primary">{{ users.length }}</p>
+      </div>
+      <div class="bg-white p-3 md:p-4 rounded shadow">
+        <h3 class="text-sm md:text-md font-medium text-sand-11">Administrateurs</h3>
+        <p class="text-xl md:text-2xl font-bold text-purple-600">
+          {{ users.filter(user => user.role === 'admin').length }}
+        </p>
+      </div>
+      <div class="bg-white p-3 md:p-4 rounded shadow">
+        <h3 class="text-sm md:text-md font-medium text-sand-11">Employés</h3>
+        <p class="text-xl md:text-2xl font-bold text-green-600">
+          {{ users.filter(user => user.role === 'employee').length }}
+        </p>
+      </div>
+    </div>
+
+    <div class="mt-4">
+      <a href="{{ route('admin.dailyPresences') }}" class="block w-full text-center bg-blue-500 text-white font-medium py-2 px-3 rounded-lg hover:bg-blue-700 text-sm md:text-base">
+        Voir les présences
+      </a>
+    </div>
+  </main>
+
+  @include('components/footer')
+
+  <script>
+    // Masquer les messages flash après 5 secondes
+    const flashMessages = document.querySelectorAll('.bg-green-100, .bg-red-100');
+    flashMessages.forEach(message => {
+      setTimeout(() => {
+        message.remove();
+      }, 5000);
+    });
+
+    // Gestion du menu mobile
+    document.addEventListener('DOMContentLoaded', function() {
+      const burgerBtn = document.getElementById('burger-btn');
+      const closeBtn = document.getElementById('close-menu-btn');
+      const mobileMenu = document.getElementById('mobile-menu');
+
+      function toggleMenu() {
+        mobileMenu.classList.toggle('hidden');
+        document.body.classList.toggle('overflow-hidden');
+      }
+
+      burgerBtn.addEventListener('click', toggleMenu);
+      closeBtn.addEventListener('click', toggleMenu);
+
+      // Fermer en cliquant à l'extérieur
+      mobileMenu.addEventListener('click', function(e) {
+        if (e.target === mobileMenu) {
+          toggleMenu();
+        }
+      });
+    });
+  </script>
+</body>
+</html>

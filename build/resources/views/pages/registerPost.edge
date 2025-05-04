@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enregistrement</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      :root {
+        --sand-1: #fdfdfc;
+        --sand-2: #f9f9f8;
+        --sand-3: #f1f0ef;
+        --sand-4: #e9e8e6;
+        --sand-5: #e2e1de;
+        --sand-6: #dad9d6;
+        --sand-7: #cfceca;
+        --sand-8: #bcbbb5;
+        --sand-9: #8d8d86;
+        --sand-10: #82827c;
+        --sand-11: #63635e;
+        --sand-12: #21201c;
+      }
+    </style>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Instrument Sans", "sans-serif"]
+            },
+            colors: {
+              primary: {
+                DEFAULT: "#5A45FF",
+                lighter: "#a599ff"
+              },
+              sand: {
+                1: "var(--sand-1)",
+                2: "var(--sand-2)",
+                3: "var(--sand-3)",
+                4: "var(--sand-4)",
+                5: "var(--sand-5)",
+                6: "var(--sand-6)",
+                7: "var(--sand-7)",
+                8: "var(--sand-8)",
+                9: "var(--sand-9)",
+                10: "var(--sand-10)",
+                11: "var(--sand-11)",
+                12: "var(--sand-12)"
+              }
+            }
+          }
+        }
+      };
+    </script>
+</head>
+<body class="bg-black text-white font-sans">
+    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8 bg-gray-900 bg-opacity-80 backdrop-blur-md rounded-lg shadow-lg p-8">
+            <div>
+                <h2 class="mt-6 text-center text-3xl font-extrabold text-white">
+                    Rejoignez-nous !
+                </h2>
+                <p class="mt-2 text-center text-sm text-gray-300">
+                    Créez votre compte East Castel Agent.
+                </p>
+            </div>
+
+            <!-- Messages flash -->
+
+            @if(flashMessages.has('error'))
+                <div class="bg-red-900 text-red-200 p-3 rounded-md mb-4">
+                    {{ flashMessages.get('error') }}
+                </div>
+            @endif
+
+            <form method="POST" action="{{ route('register') }}" class="mt-8 space-y-6">
+              {{ csrfField() }}
+
+                <div class="rounded-md shadow-sm -space-y-px space-y-4">
+                    <!-- Prénom -->
+                    <div>
+                        <label for="firstName" class="sr-only">Prénom</label>
+                        <input 
+                            id="firstName" 
+                            name="firstName" 
+                            type="text" 
+                            value="{{ flashMessages.get('firstName', '') }}"
+                            class="appearance-none rounded-t-md relative block w-full px-3 py-2 border border-gray-700 placeholder-gray-500 text-white bg-gray-800 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-1 sm:text-sm" 
+                            placeholder="Prénom"
+                        >
+                        @if(flashMessages.has('errors.firstName'))
+                            <p class="mt-1 text-sm text-red-500">{{ flashMessages.get('errors.firstName') }}</p>
+                        @endif
+                    </div>
+
+                    <!-- Nom -->
+                    <div>
+                        <label for="name" class="sr-only">Nom</label>
+                        <input 
+                            id="name" 
+                            name="name" 
+                            type="text" 
+                            value="{{ flashMessages.get('name', '') }}"
+                            class="appearance-none relative block w-full px-3 py-2 border border-gray-700 placeholder-gray-500 text-white bg-gray-800 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-1 sm:text-sm" 
+                            placeholder="Nom"
+                        >
+                        @if(flashMessages.has('errors.name'))
+                            <p class="mt-1 text-sm text-red-500">{{ flashMessages.get('errors.name') }}</p>
+                        @endif
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <label for="email" class="sr-only">Email</label>
+                        <input 
+                            id="email" 
+                            name="email" 
+                            type="email" 
+                            value="{{ flashMessages.get('email', '') }}"
+                            class="appearance-none relative block w-full px-3 py-2 border border-gray-700 placeholder-gray-500 text-white bg-gray-800 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-1 sm:text-sm" 
+                            placeholder="Email"
+                        >
+                        @if(flashMessages.has('errors.email'))
+                            <p class="mt-1 text-sm text-red-500">{{ flashMessages.get('errors.email') }}</p>
+                        @endif
+                    </div>
+
+                    <!-- Mot de passe -->
+                    <div>
+                        <label for="password" class="sr-only">Mot de passe</label>
+                        <input 
+                            id="password" 
+                            name="password" 
+                            type="password" 
+                            class="appearance-none relative block w-full px-3 py-2 border border-gray-700 placeholder-gray-500 text-white bg-gray-800 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-1 sm:text-sm" 
+                            placeholder="Mot de passe"
+                        >
+                        @if(flashMessages.has('errors.password'))
+                            <p class="mt-1 text-sm text-red-500">{{ flashMessages.get('errors.password') }}</p>
+                        @endif
+                    </div>
+
+                    <!-- Confirmation mot de passe -->
+                    <div>
+                        <label for="password_confirmation" class="sr-only">Confirmer le mot de passe</label>
+                        <input 
+                            id="password_confirmation" 
+                            name="password_confirmation" 
+                            type="password" 
+                            class="appearance-none rounded-b-md relative block w-full px-3 py-2 border border-gray-700 placeholder-gray-500 text-white bg-gray-800 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-1 sm:text-sm" 
+                            placeholder="Confirmer le mot de passe"
+                        >
+                    </div>
+                </div>
+
+                <div class="flex items-center">
+                    <input 
+                        id="remember-me" 
+                        name="remember-me" 
+                        type="checkbox" 
+                        class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-700 rounded bg-gray-800"
+                    >
+                    <label for="remember-me" class="ml-2 block text-sm text-gray-400">
+                        Se souvenir de moi
+                    </label>
+                </div>
+
+                <div>
+                    <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        S'inscrire
+                    </button>
+                </div>
+
+                <div class="text-center text-sm text-gray-400">
+                    <a href="{{ route('loginPost') }}" class="font-medium text-indigo-500 hover:text-indigo-400">
+                        Vous avez déjà un compte ?
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

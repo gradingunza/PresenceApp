@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <title>EASTCASTEL - Application de présence</title>
+
+    <link rel="preconnect" href="https://fonts.bunny.net" />
+    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    transitionProperty: {
+                        'menu': 'transform, opacity'
+                    },
+                    fontFamily: {
+                        sans: ["Instrument Sans", "sans-serif"]
+                    },
+                    colors: {
+                        primary: {
+                            DEFAULT: "#4CAF50",
+                            lighter: "#81C784",
+                            dark: "#388E3C"
+                        },
+                        sand: {
+                            1: "#fdfdfc",
+                            2: "#f9f9f8",
+                            3: "#f1f0ef",
+                            4: "#e9e8e6",
+                            5: "#e2e1de",
+                            6: "#dad9d6",
+                            7: "#cfceca",
+                            8: "#bcbbb5",
+                            9: "#8d8d86",
+                            10: "#82827c",
+                            11: "#63635e",
+                            12: "#21201c"
+                        },
+                        boxShadow: {
+                            'card': '0 4px 12px rgba(0, 0, 0, 0.08)',
+                            'button': '0 4px 6px -1px rgba(76, 175, 80, 0.2)'
+                        },
+                        dark: '#121212',
+                        light: '#f5f5f5',
+                        blackText: '#000000',
+                    },
+                    backgroundColor: {
+                        'dark': '#121212',
+                    },
+                    textColor: {
+                        'light': '#f5f5f5',
+                        'blackText': '#000000',
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        @media (max-width: 320px) {
+            .container {
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
+            .mobile-menu-content {
+                width: 280px;
+            }
+            .text-responsive {
+                font-size: 1rem;
+            }
+            .text-xl-responsive {
+                font-size: 1.25rem;
+            }
+            .text-3xl-responsive {
+                font-size: 1.5rem;
+            }
+            .p-responsive {
+                padding: 1.5rem;
+            }
+            .py-responsive {
+                padding-top: 0.75rem;
+                padding-bottom: 0.75rem;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .md\:p-6 {
+                padding: 1.5rem;
+            }
+            .md\:grid-cols-2 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            .md\:gap-6 {
+                gap: 1.5rem;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .lg\:text-4xl {
+                font-size: 2.25rem;
+                line-height: 2.5rem;
+            }
+            .lg\:p-8{
+                padding: 2rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-dark min-h-screen flex flex-col text-light">
+    @include('components/header')
+
+    <main class="container mx-auto p-3 flex-1">
+        <div class="max-w-full mx-auto mb-4">
+            @if(flashMessages.has('success'))
+                <div id="flash-message" class="bg-green-700 border-l-4 border-green-300 text-green-100 p-3 rounded-r shadow-card text-sm">
+                    <div class="flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        <p>{{ flashMessages.get('success') }}</p>
+                    </div>
+                </div>
+            @endif
+            @if(flashMessages.has('error'))
+                <div id="flash-error" class="bg-red-700 border-l-4 border-red-300 text-red-100 p-3 rounded-r shadow-card text-sm">
+                    <div class="flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                        </svg>
+                        <p>{{ flashMessages.get('error') }}</p>
+                    </div>
+                </div>
+            @endif
+        </div>
+
+        <div class="bg-gray-800 rounded-lg shadow-card overflow-hidden mt-16">
+            <div class="bg-green-100 p-4 text-blackText">
+                <h2 class="text-xl-responsive lg:text-4xl text-center font-bold mb-1">Bienvenue, {{ auth.user?.firstName }} {{ auth.user?.name }}</h2>
+                <p class="text-base opacity-90 text-center">Gérez facilement vos présences.</p>
+            </div>
+
+            <div class="p-4 md:p-6 md:grid md:grid-cols-2 md:gap-6">
+                <div class="bg-green-100 rounded-lg p-4 shadow-md text-blackText">
+                    <h3 class="text-lg font-semibold mb-3">Actions rapides</h3>
+                    <div class="space-y-2">
+                        <a href="{{ route('presences.index') }}" class="w-full bg-primary hover:bg-primary-dark text-blackText font-medium py-2 px-3 rounded-lg transition-all duration-200 shadow-button block text-center text-sm">
+                            <svg class="w-4 h-4 mr-1 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                            Créer une présence
+                        </a>
+                        <a href="{{ route('presences.report') }}" class="w-full bg-gray-800 border border-gray-600 hover:border-primary text-light font-medium py-2 px-3 rounded-lg transition-all duration-200 block text-center text-sm">
+                            <svg class="w-4 h-4 mr-1 text-primary inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 0 002-2M9 5a2 2 0 012-2h2a2 0 012 2"/>
+                            </svg>
+                            Voir l'historique
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    @include('components/footer')
+
+    <script>
+        // Masquer les messages flash après 5 secondes
+        const flashMessages = document.querySelectorAll('.bg-green-700, .bg-red-700');
+        flashMessages.forEach(message => {
+            setTimeout(() => {
+                message.remove();
+            }, 5000);
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const burgerBtn = document.getElementById('burger-btn');
+            const closeBtn = document.getElementById('close-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const mobileLinks = document.querySelectorAll('#mobile-menu a');
+
+            function toggleMenu() {
+                mobileMenu.classList.toggle('hidden');
+                document.body.classList.toggle('overflow-hidden');
+            }
+
+            burgerBtn.addEventListener('click', toggleMenu);
+            closeBtn.addEventListener('click', toggleMenu);
+
+            mobileLinks.forEach(link => {
+                link.addEventListener('click', toggleMenu);
+            });
+
+            // Fermer en cliquant à l'extérieur
+            mobileMenu.addEventListener('click', function(e) {
+                if (e.target === mobileMenu) {
+                    toggleMenu();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

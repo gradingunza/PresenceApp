@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>EASTCASTEL - Application de présence</title>
+
+    <link rel="preconnect" href="https://fonts.bunny.net" />
+    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ["Instrument Sans", "sans-serif"]
+                    },
+                    colors: {
+                        primary: {
+                            DEFAULT: "#4CAF50",
+                            lighter: "#81C784",
+                            dark: "#388E3C"
+                        },
+                        sand: {
+                            1: "#fdfdfc",
+                            2: "#f9f9f8",
+                            3: "#f1f0ef",
+                            4: "#e9e8e6",
+                            5: "#e2e1de",
+                            6: "#dad9d6",
+                            7: "#cfceca",
+                            8: "#bcbbb5",
+                            9: "#8d8d86",
+                            10: "#82827c",
+                            11: "#63635e",
+                            12: "#21201c"
+                        },
+                        boxShadow: {
+                            'card': '0 4px 12px rgba(0, 0, 0, 0.08)',
+                            'button': '0 4px 6px -1px rgba(76, 175, 80, 0.2)'
+                        },
+                        dark: '#121212',
+                        light: '#f5f5f5',
+                        blackText: '#000000',
+                    },
+                    backgroundColor: {
+                        'dark': '#121212',
+                    },
+                    textColor: {
+                        'light': '#f5f5f5',
+                        'blackText': '#000000',
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-black text-white font-sans">
+    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8 bg-gray-900 bg-opacity-80 backdrop-blur-md rounded-lg shadow-lg p-8">
+            <!-- En-tête -->
+            <div>
+                <h2 class="mt-6 text-center text-3xl font-extrabold text-white">
+                    WELCOME ! EAST CASTEL AGENT
+                </h2>
+                <p class="mt-2 text-center text-sm text-gray-300">
+                    Veuillez remplir le formulaire ci-dessous.
+                </p>
+            </div>
+
+            <!-- Messages flash -->
+            @if(flashMessages.has('success'))
+                <div class="bg-green-900 text-green-200 p-3 rounded-md mb-4">
+                    {{ flashMessages.get('success') }}
+                </div>
+            @endif 
+            
+            @if(flashMessages.has('error'))
+                <div class="bg-red-900 text-red-200 p-3 rounded-md mb-4">
+                    {{ flashMessages.get('error') }}
+                </div>
+            @endif
+
+            <!-- Formulaire -->
+            <form method="POST" action="{{ route('login') }}" class="mt-8 space-y-6">
+                {{ csrfField() }}
+                
+                <div class="rounded-md shadow-sm -space-y-px space-y-4">
+                    <!-- Champ Email -->
+                    <div>
+                        <label for="email" class="sr-only">Adresse e-mail</label>
+                        <input
+                            id="email"
+                            name="email"
+                            type="email"
+                            value="{{ flashMessages.get('email', '') }}"
+                            required
+                            class="appearance-none relative block w-full px-3 py-2 border border-gray-700 placeholder-gray-500 text-white bg-gray-800 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-1 sm:text-sm"
+                            placeholder="Adresse e-mail"
+                        />
+                        @if(flashMessages.has('errors.email'))
+                            <p class="mt-1 text-sm text-red-500">
+                                {{ flashMessages.get('errors.email') }}
+                            </p>
+                        @endif
+                    </div>
+
+                    <!-- Champ Mot de passe -->
+                    <div>
+                        <label for="password" class="sr-only">Mot de passe</label>
+                        <input
+                            id="password"
+                            name="password"
+                            type="password"
+                            required
+                            class="appearance-none relative block w-full px-3 py-2 border border-gray-700 placeholder-gray-500 text-white bg-gray-800 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-1 sm:text-sm"
+                            placeholder="Mot de passe"
+                        />
+                        @if(flashMessages.has('errors.password'))
+                            <p class="mt-1 text-sm text-red-500">
+                                {{ flashMessages.get('errors.password') }}
+                            </p>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Lien d'inscription -->
+                <div class="flex items-center justify-between">
+                    <div class="text-sm">
+                        <a href="{{ route('registerPost') }}" class="font-medium text-indigo-500 hover:text-indigo-400">
+                            Créer un compte ?
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Bouton de soumission -->
+                <div>
+                    <button
+                        type="submit"
+                        class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    >
+                        Se connecter
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

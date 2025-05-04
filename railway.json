@@ -1,0 +1,8 @@
+{
+    "build": {
+      "builder": "nixpacks",
+      "buildCommand": "npm run predeploy",
+      "startCommand": "npm start",
+      "installCommand": "npm install --omit=dev"
+    }
+  }

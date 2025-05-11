@@ -51,55 +51,65 @@ export default class AdminController {
     }
   }
 
+  
   public async viewDailyPresences({ view }: HttpContext) {
+   
     try {
-      const today = DateTime.now().toFormat('dd/MM/yyyy');
-      const todayLabel = DateTime.now().setLocale('fr').toFormat("cccc d LLLL");
-      const todayStart = DateTime.now().startOf('day').toSQLDate();
-
-      const presencesRaw = await Presence.query()
+      
+      // 1. Configuration du fuseau horaire
+      const timeZone = 'Africa/Kinshasa';
+      const now = DateTime.now().setZone(timeZone);
+      
+      // 2. Définition de la plage de la journée avec vérification de null
+      const todayStart = now.startOf('day').toUTC().toISO();
+      const todayEnd = now.endOf('day').toUTC().toISO();
+  
+      if (!todayStart || !todayEnd) {
+        throw new Error('Impossible de générer les dates de requête');
+      }
+  
+      // 3. Récupération des présences avec conversion du fuseau horaire
+      const presences = await Presence.query()
         .preload('user')
-        .whereRaw('DATE(check_in) = ?', [todayStart])
-        .orderBy('check_in', 'desc');
-
-      const presences = presencesRaw.map((presence) => {
-        let duration = '-';
-        let formattedCheckIn = '-';
-        let formattedCheckOut = '-';
-
-        if (presence.checkIn) {
-          formattedCheckIn = presence.checkIn.toFormat('HH:mm');
-        }
-        if (presence.checkOut) {
-          formattedCheckOut = presence.checkOut.toFormat('HH:mm');
-        }
-        if (presence.checkIn && presence.checkOut) {
-          const diff = presence.checkOut.diff(presence.checkIn, ['hours', 'minutes']);
-          duration = `${diff.hours}h${String(diff.minutes).padStart(2, '0')}`;
-        }
-
-        return {
-          ...presence.serialize(),
-          formattedCheckIn,
-          formattedCheckOut,
-          duration,
-          user: presence.user.serialize(),
-        };
-      });
-
+        .whereBetween('check_in', [todayStart, todayEnd])
+        .orderBy('check_in', 'desc')
+        .then(results => results.map(presence => {
+          // Formatage des heures avec vérification de null
+          const formatTime = (date: DateTime | null) => 
+            date?.setZone(timeZone).toFormat('HH:mm') ?? '-';
+  
+          // Calcul de la durée
+          let duration = '-';
+          if (presence.checkIn && presence.checkOut) {
+            const checkIn = presence.checkIn.setZone(timeZone);
+            const checkOut = presence.checkOut.setZone(timeZone);
+            const diff = checkOut.diff(checkIn, ['hours', 'minutes']);
+            duration = `${diff.hours}h${diff.minutes.toString().padStart(2, '0')}`;
+          }
+  
+          return {
+            ...presence.serialize(),
+            formattedCheckIn: formatTime(presence.checkIn),
+            formattedCheckOut: formatTime(presence.checkOut),
+            duration,
+            user: presence.user.serialize(),
+          };
+        }));
+  
+      // 4. Renvoi des données à la vue
       return view.render('pages/daily_presence', {
         presences,
-        today,
-        todayLabel,
+        today: now.toFormat('dd/MM/yyyy'),
+        todayLabel: now.setLocale('fr').toFormat("cccc d LLLL"),
       });
+  
     } catch (error) {
-      console.error('Erreur lors de la récupération des présences quotidiennes:', error);
+      console.error('Erreur dans viewDailyPresences:', error);
       return view.render('pages/error', {
-        message: 'Erreur lors de la récupération des présences quotidiennes.',
+        message: 'Une erreur est survenue lors de la récupération des présences quotidiennes.',
       });
     }
   }
-  
 
   public async getAllPresences({ view }: HttpContext) {
     try {
@@ -112,5 +122,8 @@ export default class AdminController {
       });
     }
   }
-
 }
+  
+
+  
+

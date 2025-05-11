@@ -12,7 +12,23 @@ function formatDuration(start: Date, end: Date): string {
 }
 
 export default class PresencesController {
-  public async index({ auth, view, session }: HttpContext) {
+  private OFFICE_COORDS = { lat: -4.319097, lng: 15.283296 }
+  private MAX_DISTANCE = 150 // en mètres
+
+  private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371e3 // Rayon de la Terre en mètres
+    const φ1 = (lat1 * Math.PI) / 180
+    const φ2 = (lat2 * Math.PI) / 180
+    const Δφ = ((lat2 - lat1) * Math.PI) / 180
+    const Δλ = ((lon2 - lon1) * Math.PI) / 180
+
+    const a =
+      Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+      Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2)
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+  }
+
+  public async index({ auth, view, session, response }: HttpContext) {
     try {
       const user = await auth.getUserOrFail()
       const presences = await Presence.query()
@@ -21,11 +37,11 @@ export default class PresencesController {
         .paginate(1, 30)
 
       const today = DateTime.now().startOf('day')
-      const hasCheckedInToday = await Presence.query()
+      const hasCheckedInToday = (await Presence.query()
         .where('user_id', user.id)
         .where('check_in', '>=', today.toISO())
         .whereNull('check_out')
-        .first() !== null
+        .first()) !== null
 
       return view.render('pages/index', {
         presences,
@@ -35,39 +51,92 @@ export default class PresencesController {
       })
     } catch (error) {
       session.flash('error', 'Une erreur est survenue lors de la récupération des présences')
-      return view.render('pages/index', { presences: [], hasCheckedIn: false })
+      return response.redirect().back()
     }
   }
 
-  public async checkIn({ auth, response, session }: HttpContext) {
+ public async checkIn({ auth, request, response, session }: HttpContext) {
     try {
       const user = await auth.getUserOrFail()
-      const todayStart = DateTime.now().startOf('day').toISO()
-      const todayEnd = DateTime.now().endOf('day').toISO()
+      const { latitude, longitude } = request.only(['latitude', 'longitude'])
 
+      // Validation des coordonnées
+      if (!latitude || !longitude || isNaN(parseFloat(latitude)) || isNaN(parseFloat(longitude))) {
+        return response.status(400).json({
+          success: false,
+          message: 'Coordonnées GPS invalides'
+        })
+      }
+
+      const lat = parseFloat(latitude)
+      const lng = parseFloat(longitude)
+
+      // 1. Configuration du fuseau horaire UTC
+      const timeZone = 'Africa/Kinshasa';
+      const now = DateTime.now().setZone(timeZone);
+      
+      // 2. Définition de la plage de la journée en UTC
+      const todayStart = now.startOf('day').toUTC().toISO();
+      const todayEnd = now.endOf('day').toUTC().toISO();
+
+      if (!todayStart || !todayEnd) {
+        throw new Error('Impossible de générer les dates de requête');
+      }
+
+      // Vérification présence existante (modifiée pour utiliser UTC)
       const existingPresence = await Presence.query()
         .where('user_id', user.id)
-        .whereBetween('check_in', [todayStart, todayEnd])
+        .where('check_in', '>=', todayStart)
+        .where('check_in', '<=', todayEnd)
         .whereNull('check_out')
         .first()
 
       if (existingPresence) {
-        session.flash('error', 'Vous avez déjà un check-in sans check-out aujourd\'hui')
-        return response.redirect().back()
+        return response.status(400).json({
+          success: false,
+          message: 'Vous avez déjà un check-in sans check-out aujourd\'hui'
+        })
       }
 
-      await Presence.create({
-        userId: user.id,
-        checkIn: DateTime.now(),
-        status: 'present',
+      // Calcul distance
+      const distance = this.calculateDistance(
+        lat,
+        lng,
+        this.OFFICE_COORDS.lat,
+        this.OFFICE_COORDS.lng
+      )
+
+      if (distance > this.MAX_DISTANCE) {
+        return response.status(400).json({
+          success: false,
+          message: `Vous êtes à ${Math.round(distance)}m du bureau. Distance maximale autorisée: ${this.MAX_DISTANCE}m`
+        })
+      }
+
+      // Enregistrement avec date UTC
+      // Enregistrement avec date UTC
+        await Presence.create({
+          userId: user.id,
+          checkIn: now.toUTC(), // Modification ici : assigner l'objet DateTime directement
+          status: distance > 50 ? 'present' : 'present',
+          latitude: lat,
+          longitude: lng,
+        });
+
+      session.flash('success', `Check-in enregistré à ${Math.round(distance)}m du bureau`)
+
+      return response.json({
+        success: true,
+        message: `Check-in réussi à ${Math.round(distance)}m du bureau`,
+        redirect: request.header('referer') || '/'
       })
 
-      session.flash('success', 'Check-in enregistré avec succès')
-      return response.redirect().toRoute('presences.report')
     } catch (error) {
-      console.error('Erreur checkIn:', error)
-      session.flash('error', 'Erreur lors de l\'enregistrement du check-in')
-      return response.redirect().toRoute('presences.report')
+      console.error('CheckIn error:', error)
+      return response.status(500).json({
+        success: false,
+        message: `Erreur lors du check-in: ${error.message}`
+      })
     }
   }
 
@@ -110,7 +179,6 @@ export default class PresencesController {
       selectedUserId: request.input('user_id') || '',
     })
   }
-
 
   public async viewDailyPresences({ view }: HttpContext) {
     try {
@@ -155,7 +223,4 @@ export default class PresencesController {
       })
     }
   }
-
-  
-
 }

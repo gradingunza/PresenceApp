@@ -8,6 +8,15 @@
   <link rel="preconnect" href="https://fonts.bunny.net" />
   <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
 
+  <script>
+    // Configuration des coordonnées du bureau (Kinshasa)
+    const OFFICE_COORDS = {
+      lat: -4.319097,
+      lng: 15.283296,
+      maxDistance: 100 // 100 mètres de tolérance
+    };
+  </script>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -178,16 +187,21 @@
       <div class="p-3 md:p-4">
         <h2 class="text-sm md:text-md font-semibold text-light mb-2 md:mb-3">Enregistrement</h2>
         @if(!hasCheckedIn)
-          <form action="{{ route('presences.checkIn') }}" method="POST">
+          <form action="{{ route('presences.checkIn') }}" method="POST" id="checkin-form">
             {{ csrfField() }}
-            <button type="submit" class="w-full bg-green-100 text-blackText text-sm md:text-base font-medium py-2 px-3 rounded-lg shadow-button flex items-center justify-center gap-1">
+            <button
+              id="checkin-btn"
+              type="button" class="w-full bg-green-100 text-blackText text-sm md:text-base font-medium py-2 px-3 rounded-lg shadow-button flex items-center justify-center gap-1"
+            >
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="md:w-5 md:h-5">
                 <circle cx="12" cy="12" r="10"></circle>
                 <polyline points="12 6 12 12 16 14"></polyline>
               </svg>
-              Check-in
+              Check-in GPS
             </button>
           </form>
+          <div id="gps-error" class="hidden mt-2 p-2 bg-red-700 text-red-100 rounded text-xs"></div>
+          <div id="gps-success" class="hidden mt-2 p-2 bg-green-700 text-green-100 rounded text-xs"></div>
         @else
           <form action="{{ route('presences.checkOut') }}" method="POST">
             {{ csrfField() }}
@@ -243,6 +257,9 @@
                       <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xxs md:text-xs font-medium bg-green-100 text-green-800">
                         Présent
                       </span>
+                    {{-- Condition Edge pour afficher le statut de présence --}}
+                    {{--
+                    Condition Edge pour afficher le statut de présence
                     @elseif(presence.status === 'late')
                       <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xxs md:text-xs font-medium bg-yellow-100 text-yellow-800">
                         Retard
@@ -251,6 +268,7 @@
                       <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xxs md:text-xs font-medium bg-red-100 text-red-800">
                         Absent
                       </span>
+                    --}}
                     @endif
                   </td>
                 </tr>
@@ -270,7 +288,7 @@
     flashMessages.forEach(message => {
       setTimeout(() => {
         message.remove();
-      }, 5000);
+      }, 9000);
     });
 
     // Gestion du menu mobile
@@ -281,7 +299,7 @@
 
       function toggleMenu() {
         mobileMenu.classList.toggle('hidden');
-        document.body.classList.toggle('overflow-hidden');
+        document.document.body.classList.toggle('overflow-hidden');
       }
 
       burgerBtn.addEventListener('click', toggleMenu);
@@ -294,6 +312,126 @@
         }
       });
     });
+
+    
+        document.addEventListener('DOMContentLoaded', () => {
+    const checkinBtn = document.getElementById('checkin-btn');
+    const checkinForm = document.getElementById('checkin-form');
+    const errorDiv = document.getElementById('gps-error');
+    const successDiv = document.getElementById('gps-success');
+
+    if (checkinBtn) {
+      checkinBtn.addEventListener('click', async () => {
+        checkinBtn.disabled = true;
+        checkinBtn.innerHTML = `
+          <svg class="animate-spin h-4 w-4 mr-1" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" opacity="0.25"></circle>
+            <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Localisation en cours...
+        `;
+        errorDiv.classList.add('hidden');
+        successDiv.classList.add('hidden');
+
+        try {
+          // Options avec timeout augmenté
+          const options = {
+            enableHighAccuracy: true,
+            timeout: 15000, // 15 secondes
+            maximumAge: 0
+          };
+
+          // 1. Obtenir la position
+          const position = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, options);
+          });
+
+          // 2. Calculer la distance
+          const distance = calculateDistance(
+            position.coords.latitude,
+            position.coords.longitude,
+            OFFICE_COORDS.lat,
+            OFFICE_COORDS.lng
+          );
+
+          // Afficher le message de distance de manière permanente
+          successDiv.textContent = `Distance du bureau : ${Math.round(distance)} mètres`;
+          successDiv.classList.remove('hidden');
+          successDiv.classList.add('text-sm', 'md:text-base');
+
+          // 3. Envoyer au serveur
+          const formData = new FormData(checkinForm);
+          formData.append('latitude', position.coords.latitude);
+          formData.append('longitude', position.coords.longitude);
+
+          const response = await fetch(checkinForm.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+              'Accept': 'application/json'
+            }
+          });
+
+          const responseData = await response.json();
+
+          if (response.ok) {
+            // Mettre à jour le message avec la confirmation
+            successDiv.textContent = `Check-in réussi (${Math.round(distance)} mètres)`;
+            
+            if (responseData.redirect) {
+              window.location.href = responseData.redirect;
+            } else {
+              window.location.reload();
+            }
+          } else {
+            throw new Error(responseData.message || 'Erreur serveur');
+          }
+
+        } catch (error) {
+          console.error('Erreur:', error);
+          errorDiv.textContent = error.message;
+          errorDiv.classList.remove('hidden');
+          errorDiv.classList.add('text-sm', 'md:text-base');
+          successDiv.classList.add('hidden');
+        } finally {
+          checkinBtn.disabled = false;
+          checkinBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="md:w-5 md:h-5">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            Check-in GPS
+          `;
+        }
+      });
+    }
+
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371e3; // Rayon Terre en mètres
+      const φ1 = lat1 * Math.PI/180;
+      const φ2 = lat2 * Math.PI/180;
+      const Δφ = (lat2-lat1) * Math.PI/180;
+      const Δλ = (lon2-lon1) * Math.PI/180;
+
+      const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                Math.cos(φ1) * Math.cos(φ2) *
+                Math.sin(Δλ/2) * Math.sin(Δλ/2);
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }
+
+    function getGeoErrorMessage(err) {
+      switch(err.code) {
+        case err.PERMISSION_DENIED: 
+          return "Autorisez la géolocalisation dans les paramètres de votre navigateur";
+        case err.POSITION_UNAVAILABLE: 
+          return "Signal GPS insuffisant - activez votre GPS";
+        case err.TIMEOUT: 
+          return "Temps de réponse dépassé - réessayez dans une zone dégagée";
+        default: 
+          return "Impossible de déterminer votre position";
+      }
+    }
+  });
   </script>
 </body>
 </html>

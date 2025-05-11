@@ -14,8 +14,8 @@ export default class InitialSeeder extends BaseSeeder {
     await User.create({
       firstName: 'Admin',
       name: 'Admin',
-      email: 'admin@example.com',
-      password: 'password123', // Changez ce mot de passe en production
+      email: 'admin@eastcastel.com',
+      password: 'eastcatel2025', // Changez ce mot de passe en production
       roleId: 2 // ID du rôle Admin
     })
   }

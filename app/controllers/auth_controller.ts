@@ -58,9 +58,9 @@ export default class AuthController {
     } catch (error) {
       {
         console.error('Erreur lors de l\'inscription:', error); // Pour déboguer
-        session.flash('error', 'Erreur lors de l\'inscription. Veuillez réessayer.');
+        session.flash('error', 'Compte déjà existant, ou mot de passe moins de 6 caractères');
       }
-      return response.redirect().toRoute('registerPost'); // Rester sur la page d'inscription
+      return response.redirect().toRoute('registerPost'); // aller sur la page d'inscription
     }
   }
 

@@ -34,7 +34,7 @@ export default class PresencesController {
       const presences = await Presence.query()
         .where('user_id', user.id)
         .orderBy('check_in', 'desc')
-        .paginate(1, 3).then(presence =>presence.map((p)=> {
+        .paginate(1, 30).then(presence =>presence.map((p)=> {
           p.checkIn = DateTime.fromISO(p.checkIn as unknown as string).setZone('Africa/Kinshasa') 
           p.checkOut = p.checkOut? DateTime.fromISO(p.checkOut as unknown as string).setZone('Africa/Kinshasa') : null
 

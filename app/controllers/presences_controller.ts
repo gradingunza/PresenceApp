@@ -12,8 +12,8 @@ function formatDuration(start: Date, end: Date): string {
 }
 
 export default class PresencesController {
-  private OFFICE_COORDS = { lat: -4.32132, lng: 15.27431 }
-  private MAX_DISTANCE = 1000 // en mètres
+  private OFFICE_COORDS = { lat: -4.319097, lng: 15.273296 }
+  private MAX_DISTANCE = 100 // en mètres
 
   private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
     const R = 6371e3 // Rayon de la Terre en mètres

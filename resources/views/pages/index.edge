@@ -11,9 +11,9 @@
   <script>
     // Configuration des coordonnées du bureau (Kinshasa)
     const OFFICE_COORDS = {
-      lat: -4.319097,
-      lng: 15.283296,
-      maxDistance: 100 // 100 mètres de tolérance
+      lat: -4.32132,
+      lng: 15.27431,
+      maxDistance: 1000 // 100 mètres de tolérance
     };
   </script>
 
@@ -241,13 +241,26 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-sand-6">
-              @each(presence in presences)
-                <tr class="hover:bg-sand-8/50">
-                  <td class="px-2 py-1 md:px-3 md:py-2 text-light">{{ new Date(presence.checkIn).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }) }}</td>
-                  <td class="px-2 py-1 md:px-3 md:py-2 text-light">{{ new Date(presence.checkIn).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) }}</td>
+                  <td>
+                    @each(presence in presences)
+                      <tr class="hover:bg-sand-8/50">
+                      <td class="px-2 py-1 md:px-3 md:py-2 text-light">
+                    {{ new Date(presence.checkIn).toLocaleDateString('fr-FR', { 
+                      day: '2-digit', 
+                      month: '2-digit',
+                      timeZone: 'Africa/Kinshasa' 
+                    }) }}
+                  </td>
+                  <td class="px-2 py-1 md:px-3 md:py-2 text-light">
+                    {{ new Date(presence.checkIn).toLocaleTimeString('fr-FR', { 
+                      hour: '2-digit', 
+                      minute: '2-digit',
+                      timeZone: 'Africa/Kinshasa' 
+                    }) }}
+                  </td>
                   <td class="px-2 py-1 md:px-3 md:py-2 text-light">
                     @if(presence.checkOut)
-                      {{ new Date(presence.checkOut).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) }}
+                      {{ new Date(presence.checkOut).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit',timeZone:'Africa/Kinshasa' }) }}
                     @else
                       <span class="text-sand-4">-</span>
                     @endif

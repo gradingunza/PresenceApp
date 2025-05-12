@@ -12,8 +12,8 @@ function formatDuration(start: Date, end: Date): string {
 }
 
 export default class PresencesController {
-  private OFFICE_COORDS = { lat: -4.319097, lng: 15.283296 }
-  private MAX_DISTANCE = 150 // en mètres
+  private OFFICE_COORDS = { lat: -4.32132, lng: 15.27431 }
+  private MAX_DISTANCE = 1000 // en mètres
 
   private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
     const R = 6371e3 // Rayon de la Terre en mètres
@@ -30,11 +30,24 @@ export default class PresencesController {
 
   public async index({ auth, view, session, response }: HttpContext) {
     try {
-      const user = await auth.getUserOrFail()
+      const user =  auth.getUserOrFail()
       const presences = await Presence.query()
         .where('user_id', user.id)
         .orderBy('check_in', 'desc')
-        .paginate(1, 30)
+        .paginate(1, 3).then(presence =>presence.map((p)=> {
+          p.checkIn = DateTime.fromISO(p.checkIn as unknown as string).setZone('Africa/Kinshasa') 
+          p.checkOut = p.checkOut? DateTime.fromISO(p.checkOut as unknown as string).setZone('Africa/Kinshasa') : null
+
+          return p
+         }
+      ))
+      console.log('presences new: ', presences);
+      
+
+       
+       
+
+
 
       const today = DateTime.now().startOf('day')
       const hasCheckedInToday = (await Presence.query()
@@ -57,7 +70,7 @@ export default class PresencesController {
 
  public async checkIn({ auth, request, response, session }: HttpContext) {
     try {
-      const user = await auth.getUserOrFail()
+      const user = auth.getUserOrFail()
       const { latitude, longitude } = request.only(['latitude', 'longitude'])
 
       // Validation des coordonnées
@@ -78,6 +91,8 @@ export default class PresencesController {
       // 2. Définition de la plage de la journée en UTC
       const todayStart = now.startOf('day').toUTC().toISO();
       const todayEnd = now.endOf('day').toUTC().toISO();
+
+      console.log(todayStart)
 
       if (!todayStart || !todayEnd) {
         throw new Error('Impossible de générer les dates de requête');
@@ -114,14 +129,19 @@ export default class PresencesController {
       }
 
       // Enregistrement avec date UTC
-      // Enregistrement avec date UTC
-        await Presence.create({
+      // Enregistrement avec date UTC*
+      const kinshasaTime = DateTime.now().setZone('Africa/Kinshasa')
+        const present = await Presence.create({
           userId: user.id,
-          checkIn: now.toUTC(), // Modification ici : assigner l'objet DateTime directement
+          checkIn:DateTime.now().setZone('Africa/Kinshasa'),
+         
           status: distance > 50 ? 'present' : 'present',
           latitude: lat,
           longitude: lng,
         });
+        console.log(kinshasaTime)
+        console.log('create attendances',present.checkIn)
+        
 
       session.flash('success', `Check-in enregistré à ${Math.round(distance)}m du bureau`)
 
@@ -129,6 +149,7 @@ export default class PresencesController {
         success: true,
         message: `Check-in réussi à ${Math.round(distance)}m du bureau`,
         redirect: request.header('referer') || '/'
+        
       })
 
     } catch (error) {
@@ -142,7 +163,7 @@ export default class PresencesController {
 
   public async checkOut({ auth, response, session }: HttpContext) {
     try {
-      const user = await auth.getUserOrFail()
+      const user =  auth.getUserOrFail()
       const todayStart = DateTime.now().startOf('day').toISO()
       const todayEnd = DateTime.now().endOf('day').toISO()
 
@@ -165,7 +186,7 @@ export default class PresencesController {
   }
 
   public async report({ auth, view, request }: HttpContext) {
-    const user = await auth.getUserOrFail()
+    const user =  auth.getUserOrFail()
     let query = Presence.query().where('user_id', user.id).orderBy('check_in', 'desc')
 
     if (request.input('user_id')) {
@@ -197,12 +218,12 @@ export default class PresencesController {
         let formattedCheckOut = presence.checkOut?.toFormat('HH:mm') || null
 
         if (presence.checkIn && presence.checkOut) {
-          duration = formatDuration(presence.checkIn.toJSDate(), presence.checkOut.toJSDate());
+          duration = formatDuration(presence.checkIn.setZone('Africa/Kinshasa').toJSDate(), presence.checkOut.toJSDate());
         }
 
         return {
           ...presence.serialize(),
-          checkIn: presence.checkIn?.toISO(),
+          checkIn: presence.checkIn?.setZone('Africa/Kinshasa'),
           checkOut: presence.checkOut?.toISO(),
           formattedCheckIn,
           formattedCheckOut,
@@ -210,6 +231,8 @@ export default class PresencesController {
           user: presence.user.serialize()
         }
       })
+
+      console.log(presences)
 
       return view.render('pages/daily_presence', {
         presences,

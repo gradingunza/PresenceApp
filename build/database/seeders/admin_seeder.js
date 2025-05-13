@@ -10,8 +10,8 @@ export default class InitialSeeder extends BaseSeeder {
         await User.create({
             firstName: 'Admin',
             name: 'Admin',
-            email: 'admin@example.com',
-            password: 'password123',
+            email: 'admin@eastcastel.com',
+            password: 'eastcatel2025',
             roleId: 2
         });
     }

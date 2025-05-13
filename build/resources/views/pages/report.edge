@@ -8,6 +8,11 @@
   <link rel="preconnect" href="https://fonts.bunny.net" />
   <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
 
+  <script>
+    // Configuration du timezone par défaut
+    const DEFAULT_TIMEZONE = 'Africa/Kinshasa';
+  </script>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -174,11 +179,27 @@
           <tbody class="divide-y divide-sand-6">
             @each(presence in presences)
               <tr class="hover:bg-sand-8/50">
-                <td class="px-2 py-2 md:px-3 md:py-2 text-light">{{ presence.checkIn.toFormat('dd/MM') }}</td>
-                <td class="px-2 py-2 md:px-3 md:py-2 text-light">{{ presence.checkIn.toFormat('HH:mm') }}</td>
+                <td class="px-2 py-2 md:px-3 md:py-2 text-light">
+                  {{ new Date(presence.checkIn).toLocaleDateString('fr-FR', { 
+                    day: '2-digit', 
+                    month: '2-digit',
+                    timeZone: 'Africa/Kinshasa'
+                  }) }}
+                </td>
+                <td class="px-2 py-2 md:px-3 md:py-2 text-light">
+                  {{ new Date(presence.checkIn).toLocaleTimeString('fr-FR', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    timeZone: 'Africa/Kinshasa'
+                  }) }}
+                </td>
                 <td class="px-2 py-2 md:px-3 md:py-2 text-light">
                   @if(presence.checkOut)
-                    {{ presence.checkOut.toFormat('HH:mm') }}
+                    {{ new Date(presence.checkOut).toLocaleTimeString('fr-FR', { 
+                      hour: '2-digit', 
+                      minute: '2-digit',
+                      timeZone: 'Africa/Kinshasa'
+                    }) }}
                   @else
                     <span class="text-sand-4">-</span>
                   @endif
@@ -211,28 +232,6 @@
         </table>
       </div>
     </div>
-
-    @if(presences.hasPages)
-      <div class="border-t border-sand-6 pt-3">
-        <div class="pagination-mobile flex items-center justify-between">
-          @if(presences.currentPage > 1)
-            <a href="{{ presences.previousPageUrl }}" class="text-xs md:text-sm px-2 py-1 border border-sand-7 rounded text-sand-4 hover:bg-sand-8">
-              Précédent
-            </a>
-          @endif
-
-          <span class="text-xs md:text-sm text-sand-6 px-2">
-            Page {{ presences.currentPage }} sur {{ presences.lastPage }}
-          </span>
-
-          @if(presences.currentPage < presences.lastPage)
-            <a href="{{ presences.nextPageUrl }}" class="text-xs md:text-sm px-2 py-1 border border-sand-7 rounded text-sand-4 hover:bg-sand-8">
-              Suivant
-            </a>
-          @endif
-        </div>
-      </div>
-    @endif
   </main>
 
   @include('components/footer')

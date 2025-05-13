@@ -13,7 +13,7 @@ function formatDuration(start: Date, end: Date): string {
 
 export default class PresencesController {
   private OFFICE_COORDS = { lat: -4.319097, lng: 15.283296 }
-  private MAX_DISTANCE = 100 // en mètres
+  private MAX_DISTANCE = 55 // en mètres
 
   private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
     const R = 6371e3 // Rayon de la Terre en mètres
@@ -135,7 +135,7 @@ export default class PresencesController {
           userId: user.id,
           checkIn:DateTime.now().setZone('Africa/Kinshasa'),
          
-          status: distance > 50 ? 'present' : 'present',
+          status: distance > 20 ? 'present' : 'present',
           latitude: lat,
           longitude: lng,
         });
